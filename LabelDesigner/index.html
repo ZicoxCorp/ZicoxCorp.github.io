@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>LabelDesigner</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1,user-scalable=no">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+		<!--标准mui.css-->
+		<link rel="stylesheet" href="designer/mui/css/mui.css">
+		<link rel="stylesheet" href="designer/mui/css/font-awesome.css">
+		<link rel="stylesheet" href="designer/printer/printer-fonts.css">
+		<!--App自定义的css-->
+		<!--<link rel="stylesheet" type="text/css" href="../css/app.css" />-->
+		<style>
+			.mui-bar-nav {height:86px;}
+			.mui-plus .plus{display: inline;}			
+			.plus{display: none;}
+			#topPopover {position: fixed;top: 16px;right: 6px;}
+			#topPopover .mui-popover-arrow {left: auto;right: 6px;}
+			p {text-indent: 22px;}
+			span.mui-icon {font-size: 14px;color: #007aff;margin-left: -15px;padding-right: 10px;}
+			#popupImportOutport {height: 120px;width: 160px;}
+			#popupAddItem {height: 280px;width: 140px;}
+			.mui-content {padding: 10px;padding-top:96px;padding-bottom:0px;}
+			.mui-off-canvas-right {width: 40%;background: #ffffff;}
+			#offCanvasContentScroll {padding-bottom:10px;}
+			.mui-icon{font-size:22px!important;padding:0px!import;margin:0px!important;}
+		</style>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon icon-angle-left mui-pull-left"></a>
+			<a class="mui-action-back mui-icon icon-cloud-upload mui-pull-left"></a>
+			<a class="mui-action-menu mui-icon icon-reorder mui-pull-right" href="#popupImportOutport"></a>
+			<h1 class="mui-title">popover（弹出菜单）</h1>
+			<div class="nav-head-line" style="margin-top:42px;height:4px;border-top: 1px solid gray;"></div>
+			<!--工具栏部分-->
+		    <div class="mui-content-padded" style="margin-top:-6px;position: absolute;width:100%;">
+				<!--左侧主工具栏-->
+				<button type="button" id="menuLabelSetSize" class="mui-btn mui-btn-primary mui-icon icon-file" style="margin-left:-10px!important;border-radius: 20px;padding:2px 9px 1px 10px;"></button>
+				<a id="menuAddItem" class="mui-btn mui-btn-primary mui-icon icon-plus" style="margin-left:6px!important;border-radius: 20px;padding:6px 9px 6px 9px;" href="#popupAddItem"></a>
+				<!--右侧对象工具栏-->
+				<div id="groupConfigItem" style="float: right;margin-right:30px;display:none;white-space: nowrap;">
+					<button type="button" id="menuItemRemove" class="mui-btn mui-btn-primary mui-icon icon-trash" style="width:38px;margin-left:10px!important;border-radius:20px;padding:3px 11px 1px 10px;"></button>
+					<select id="menuItemTypeSelect" class="mui-btn" style="width:96px;margin-top:1px;" readonly="readonly" onfocus="this.defaultIndex=this.selectedIndex;">
+						<option value="item-1">item-1</option>
+						<option value="item-2">item-2</option>
+						<option value="item-3">item-3</option>
+						<option value="item-4">item-4</option>
+						<option value="item-5">item-5</option>
+					</select>
+					<button type="button" id="menuItemConfig" class="mui-btn mui-btn-primary mui-icon icon-edit" style="margin-left:8px!important;border-radius: 20px;padding:3px 5px 1px 8px;"></button>
+				</div>
+			</div>
+		</header>
+		<!--弹出菜单导入导出文件-->
+		<div id="popupImportOutport" class="mui-popover">
+			<div class="mui-popover-arrow"></div>
+			<div class="mui-scroll-wrapper">
+				<div class="mui-scroll">
+					<ul class="mui-table-view mui-table-view-chevron">
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-text-width" style="padding-right:0px;" id="import_label"><span style="margin-left:12px;">导入标签</span></a></li>
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-barcode" id="outport_label"><span style="margin-left:10px;">导出标签</span></a></li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+		<!--弹出菜单添加元素-->
+		<div id="popupAddItem" class="mui-popover">
+			<div class="mui-popover-arrow"></div>
+			<div class="mui-scroll-wrapper">
+				<div class="mui-scroll">
+					<ul class="mui-table-view mui-table-view-chevron">
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-text-width" id="add_text"><span style="margin-left:12px;">文本</span></a></li>
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-barcode" id="add_barcode"><span style="margin-left:10px;">条码</span></a></li>
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-qrcode" id="add_barcode"><span style="margin-left:14px;">二维码</span></a></li>
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-picture" id="add_image"><span style="margin-left:9px;">图片</span></a></li>
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-check-empty" id="add_box"><span style="margin-left:14px;">方框</span></a></li>
+						<li class="mui-table-view-cell"><a style="padding-right:0px;" class="icon-minus" id="add_line"><span style="margin-left:10px;">线条</span></a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div id="offCanvasWrapper" class="mui-off-canvas-wrap mui-draggable">
+			<!--标签编辑部分-->
+			<div class="mui-inner-wrap">
+				<div id="offCanvasContentScroll" class="mui-content mui-scroll-wrapper">
+					<center>
+						<div id="labelDesignerCanvasContainer" style='position:relative;left:0px;top:0px;'>
+							<canvas id="labelDesignerCanvas" width="384px" height="384px" style="border:1px solid #000000;border-radius:10px;"></canvas>
+						</div>
+					</center>
+				</div>
+				<!-- off-canvas backdrop -->
+				<div class="mui-off-canvas-backdrop"></div>
+			</div>
+		</div>
+		<div style="font-family:'FontAwesome';display: none;font-size: 1;">1</div>
+		<script src="designer/mui/js/mui.js"></script>
+		<script src="designer/fontfaceobserver/fontfaceobserver.js"></script>
+		<script src="designer/fabric/fabric.min.js"></script>
+		<script src="designer/itemText.js"></script>
+		<script src="designer/labelCanvas.js"></script>
+		<script src="designer/promptEx.js"></script>
+		<script src="designer/labelDesigner.js"></script>
+		<script>
+			mui.init();
+			mui.plusReady(function () {});
+			mui('.mui-scroll-wrapper').scroll();
+			mui('body').on('shown', '.mui-popover', function(e) {});
+			mui('body').on('hidden', '.mui-popover', function(e) {});
+			
+			mui('body').on('click', '#add_text', function(e) {mui('#popupAddItem').popover('toggle');item_text_add();});
+			mui('body').on('click', '#add_barcode', function(e) {mui('#popupAddItem').popover('toggle');mui.toast('add_barcode');});
+			mui('body').on('click', '#add_image', function(e) {mui('#popupAddItem').popover('toggle');mui.toast('add_image');});
+			mui('body').on('click', '#add_box', function(e) {mui('#popupAddItem').popover('toggle');mui.toast('add_box');});
+			mui('body').on('click', '#add_line', function(e) {mui('#popupAddItem').popover('toggle');mui.toast('add_line');});
+
+			mui('body').on('click', '#import_label', function(e) {mui('#popupImportOutport').popover('toggle');designer.import_label();});
+			mui('body').on('click', '#outport_label', function(e) {mui('#popupImportOutport').popover('toggle');designer.outport_label();});
+
+			mui('body').on('click', '#menuLabelSetSize', function(e) {designer.set_label_size();});
+		</script>
+	</body>
+
+</html>

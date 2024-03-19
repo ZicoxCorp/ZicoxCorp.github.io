@@ -1,0 +1,66 @@
+@font-face {
+	font-family: 'PrnFnt00';
+	src: url('font/00.SiYuanHeiTi-2.2.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt09';
+	src: url('font/09.SysFont-2.4En.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt10';
+	src: url('font/10.SiYuanSongTi-2.2.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt8C';
+	src: url('font/8C.Font4(Size0~1)-2.5.ttf') format('truetype');
+	unicode-range: U+0-7F;
+}
+
+@font-face {
+	font-family: 'PrnFnt8D';
+	src: url('font/8D.Font4(Size 2~7)-2.7.ttf') format('truetype');
+	unicode-range: U+0-7F;
+}
+
+@font-face {
+	font-family: 'PrnFnt80';
+	src: url('font/80.Font0(Size 0~6)-2.3.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt84';
+	src: url('font/84.Font1(Size 0)-2.3.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt88';
+	src: url('font/88.Font2(Size 0)-2.2.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt89';
+	src: url('font/89.Font2(Size 1)-2.2.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt90';
+	src: url('font/90.Font5(Size 0~1)-2.3.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt91';
+	src: url('font/91.Font5(Size 2~3)-2.3.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt94';
+	src: url('font/94.Font6(Size 0)-2.1.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'PrnFnt98';
+	src: url('font/98.Font7(Size 0~1)-2.2.ttf') format('truetype');
+}
