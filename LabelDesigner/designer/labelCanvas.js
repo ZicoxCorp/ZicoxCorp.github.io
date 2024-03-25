@@ -8,6 +8,8 @@ class Label{
 		perPixelTargetFind: false, //这一句说明选中的时候以图形的实际大小来选择而不是以边框来选择
 		hasBorders: false,
 		preserveObjectStacking: true, // 默认false
+		instruction:'CPCL',
+		dpi:203,
 		});
 	lastMouseX=0;
 	lastMouseY=0;
@@ -18,7 +20,13 @@ class Label{
 		this.set_zoom(1);
 		var canvas_json=JSON.parse(sessionStorage.getItem('label_canvas'));
 		if(typeof canvas_json === 'object'){
-			this.canvas.loadFromJSON(canvas_json);
+			try {
+				this.canvas.loadFromJSON(canvas_json);
+			} catch (error) {
+				this.canvas.clear();
+				console.log(error);
+				mui.toast("读取标签失败");
+			}
 		}
 		this.update_objects_attribute();
 		this.set_zoom(1);
@@ -31,7 +39,7 @@ class Label{
 		var origZoom=this.canvas.getZoom();
 		this.set_zoom(1);
 		this.canvas.renderAll();
-		var strJSON=this.canvas.toJSON(['width','height']);
+		var strJSON=this.canvas.toJSON(['width','height','instruction','dpi','line_type','inverse']);
 		this.set_zoom(origZoom);
 		this.canvas.renderAll();
 		return JSON.stringify(strJSON);
@@ -43,6 +51,16 @@ class Label{
 			_this.labelItemCount++;
 			if(obj.get('type')=='i-text'){
 				item_text_update_attribute(obj);
+			}else if(obj.get('type')=='Barcode1D'){
+				item_barcode1d_update_attribute(obj);
+			}else if(obj.get('type')=='Barcode2D'){
+				item_barcode2d_update_attribute(obj);
+			}else if(obj.get('type')=='Bitmap'){
+				item_bitmap_update_attribute(obj);
+			}else if(obj.get('type')=='rect'){
+				item_box_update_attribute(obj);
+			}else if(obj.get('type')=='line'){
+				item_line_update_attribute(obj);
 			}
 			var locked=(obj.opacity!=1);
 			_this.item_lock_set(obj,locked);
@@ -269,7 +287,7 @@ class Label{
 		this.canvas.setZoom(zoom);
 		this.canvas.setWidth(real_w*zoom);
 		this.canvas.setHeight(real_h*zoom);
-		mui.toast(Math.round(zoom*100)+"%");
+		//mui.toast(Math.round(zoom*100)+"%");
 	}
 	enable_zoom_pan(){
 		var _this=this;
@@ -355,28 +373,62 @@ class Label{
 		var item_normal_fill_color='rgb(0,0,0)';
 		var item_lock_fill_color='rgb(60,60,60)';
 		if(locked){
-			obj.exitEditing();
+			try{obj.exitEditing();}catch(e){}
 			obj.opacity=0.8;
-			obj.set('fill',item_lock_fill_color);
+			if(obj.get('type')=='rect'){
+				obj.set('stroke',item_lock_fill_color);
+			}else if(obj.get('type')=='i-text'){
+				obj.set('fill',obj.inverse?'rgb(255,255,255)':'rgb(0,0,0)');
+				obj.set('textBackgroundColor',obj.inverse?item_lock_fill_color:'rgb(255,255,255)');
+			}else{
+				obj.set('fill',item_lock_fill_color);
+			}
 			obj.lockMovementX=true;
 			obj.lockMovementY=true;
+			
 			obj['setControlVisible']('mtr',false);
 			obj['setControlVisible']('br',false);
 			obj['setControlVisible']('bl',false);
+			obj['setControlVisible']('mb',false);
+			obj['setControlVisible']('mr',false);
+			
 			//obj.hasControls=false;
+			
 			obj.editable=false;
-			obj['borderColor']='rgb(200,200,200)';
+			if(obj.get('type')=='rect'){
+			}else{
+				obj['borderColor']='rgb(200,200,200)';
+			}
 		}else{
 			obj.opacity=1;
-			obj.set('fill',item_normal_fill_color);
+			if(typeof obj=='rect'){
+				obj.set('stroke',item_normal_fill_color);
+			}else if(obj.get('type')=='i-text'){
+				obj.set('fill',obj.inverse?'rgb(255,255,255)':item_normal_fill_color);
+				obj.set('textBackgroundColor',obj.inverse?'rgb(0,0,0)':'rgb(255,255,255)');
+			}else{
+				obj.set('fill',item_normal_fill_color);
+			}
 			obj.lockMovementX=false;
 			obj.lockMovementY=false;
-			obj['setControlVisible']('mtr',true);
-			obj['setControlVisible']('br',true);
+			
+			obj['setControlVisible']('mtr',false);
+			obj['setControlVisible']('br',false);
 			obj['setControlVisible']('bl',true);
+			obj['setControlVisible']('mb',false);
+			obj['setControlVisible']('mr',false);
+			
+			if(typeof obj.update_attribute !== 'undefined'){
+				obj.update_attribute(obj);
+			}
+						
 			//obj.hasControls=true;
+			
 			obj.editable=false;
-			obj['borderColor']='rgb(178,204,255)';
+			if(obj.get('type')=='rect'){
+			}else{
+				obj['borderColor']='rgb(178,204,255)';
+			}
 		}
 	}
 	enable_control_lock_toggle(eventData, transform){
@@ -396,7 +448,7 @@ class Label{
 			ctx.translate(left, top);
 			ctx.fillStyle = locked?'rgb(200,200,200)':'rgb(178,204,255)';
 			ctx.font = "22px FontAwesome";
-			ctx.fillText(locked?str_lock:str_unlock,-size / 2+4,size / 2-4);
+			ctx.fillText(locked?str_lock:str_unlock,-size / 2,size / 2);
 			ctx.restore();
 		};
 	}
@@ -441,17 +493,46 @@ class Label{
 			}
 		};
 	}
+	enable_control_effect_render_icon(){
+		return function (ctx, left, top, styleOverride, fabricObject) {
+			let size = this.cornerSize;
+			var locked=(fabricObject.opacity!=1);
+			if(!locked){
+				ctx.save();
+				ctx.translate(left, top);
+				ctx.fillStyle = locked?'rgb(200,200,200)':'rgb(178,204,255)';
+				ctx.font = "22px FontAwesome";
+				ctx.fillText('\uf170',-size / 2,size / 2);
+				ctx.restore();
+			}
+		};
+	}
+	enable_control_effect_action(eventData, transform){
+		var obj=this.canvas.getActiveObject();
+		var inverse=(obj.inverse==true);
+		obj.inverse=!inverse;
+		console.log('obj.inverse1:'+obj.inverse);
+		if(typeof obj.update_attribute !== 'undefined'){
+			obj.update_attribute(obj);
+		}		
+		var locked=(obj.opacity!=1);
+		this.item_lock_set(obj,locked);
+		label.canvas.renderAll();
+		label.save_to_session();
+	}
 	enable_obj_control_point(){
 		fabric.Object.prototype.controls.ml.visible=false;
 		//fabric.Object.prototype.controls.tl.visible=false;
-		fabric.Object.prototype.controls.mb.visible=false;
-		fabric.Object.prototype.controls.mr.visible=false;
+		//fabric.Object.prototype.controls.mb.visible=false;
+		//fabric.Object.prototype.controls.mr.visible=false;
 		fabric.Object.prototype.controls.mt.visible=false;
 		fabric.Object.prototype.controls.bl.visible=false;
 		fabric.Object.prototype.controls.tl.visible=false;
 		fabric.Object.prototype.controls.tr = new fabric.Control({
 			x: 0.5,
 			y: -0.5,
+			offsetX:12,
+			offsetY:-12,
 			cursorStyle: 'pointer',
 			mouseDownHandler: (eventData, transform) => this.enable_control_lock_toggle(eventData, transform),
 			render: this.enable_control_lock_render_icon(),
@@ -466,15 +547,33 @@ class Label{
 		fabric.Object.prototype.controls.bl = new fabric.Control({
 			x: -0.5,
 			y: 0.5,
+			offsetX:-8,
+			offsetY:8,
 			cursorStyle: 'pointer',
 			mouseDownHandler: (eventData, transform) => this.enable_control_delete_action(eventData, transform),
 			render: this.enable_control_delete_render_icon(),
 			cornerSize: 20
 		});
+		fabric.Object.prototype.controls.mt = new fabric.Control({
+			x: 0,
+			y: 0.5,
+			offsetX:0,
+			offsetY:8,
+			cursorStyle: 'pointer',
+			mouseDownHandler: (eventData, transform) => this.enable_control_effect_action(eventData, transform),
+			render: this.enable_control_effect_render_icon(),
+			cornerSize: 20
+		});
 	}
 	load_label_json(content){
 		this.set_zoom(1);
-		this.canvas.loadFromJSON(content);
+		try {
+			this.canvas.loadFromJSON(content);
+		} catch (error) {
+			this.canvas.clear();
+			console.log(error);
+			mui.toast("读取标签失败");
+		}
 		this.update_objects_attribute();
 		this.fix_objects();
 		this.save_to_session();
